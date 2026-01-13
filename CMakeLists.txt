@@ -14,11 +14,13 @@ find_package(nav_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(pcl_ros REQUIRED)
 find_package(pcl_conversions REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(gazebo_msgs REQUIRED)
+find_package(vision_msgs REQUIRED)
 find_package(PCL REQUIRED COMPONENTS common io)
 find_package(OpenCV REQUIRED)
 
@@ -38,9 +40,40 @@ ament_target_dependencies(dataset_recorder
 )
 target_link_libraries(dataset_recorder ${PCL_LIBRARIES} ${OpenCV_LIBS})
 
+# LiDAR clustering executable
+add_executable(lidar_clustering src/lidar_clustering.cpp)
+ament_target_dependencies(lidar_clustering
+  rclcpp
+  sensor_msgs
+  visualization_msgs
+  geometry_msgs
+  pcl_ros
+  pcl_conversions
+)
+target_link_libraries(lidar_clustering ${PCL_LIBRARIES})
+
+# Sensor fusion executable
+add_executable(sensor_fusion src/sensor_fusion.cpp)
+ament_target_dependencies(sensor_fusion
+  rclcpp
+  sensor_msgs
+  vision_msgs
+  visualization_msgs
+  geometry_msgs
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
+  pcl_ros
+  pcl_conversions
+  cv_bridge
+)
+target_link_libraries(sensor_fusion ${PCL_LIBRARIES} ${OpenCV_LIBS})
+
 # Install executables
 install(TARGETS
   dataset_recorder
+  lidar_clustering
+  sensor_fusion
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -62,20 +95,3 @@ install(DIRECTORY
 
 # ament_package() MUST BE LAST
 ament_package()
-
-# LiDAR clustering executable
-add_executable(lidar_clustering src/lidar_clustering.cpp)
-ament_target_dependencies(lidar_clustering
-  rclcpp
-  sensor_msgs
-  visualization_msgs
-  geometry_msgs
-  pcl_ros
-  pcl_conversions
-)
-target_link_libraries(lidar_clustering ${PCL_LIBRARIES})
-
-install(TARGETS
-  lidar_clustering
-  DESTINATION lib/${PROJECT_NAME}
-)

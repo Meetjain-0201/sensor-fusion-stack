@@ -80,13 +80,24 @@ Visualization Manager:
       
     - Class: rviz_default_plugins/MarkerArray
       Enabled: true
-      Name: Clusters
+      Name: LiDAR_Clusters
       Topic:
         Depth: 5
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /lidar/clusters
+      Value: true
+      
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Name: Fused_Objects
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /fusion/objects
       Value: true
 
   Enabled: true
