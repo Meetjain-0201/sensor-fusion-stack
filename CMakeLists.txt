@@ -62,3 +62,20 @@ install(DIRECTORY
 
 # ament_package() MUST BE LAST
 ament_package()
+
+# LiDAR clustering executable
+add_executable(lidar_clustering src/lidar_clustering.cpp)
+ament_target_dependencies(lidar_clustering
+  rclcpp
+  sensor_msgs
+  visualization_msgs
+  geometry_msgs
+  pcl_ros
+  pcl_conversions
+)
+target_link_libraries(lidar_clustering ${PCL_LIBRARIES})
+
+install(TARGETS
+  lidar_clustering
+  DESTINATION lib/${PROJECT_NAME}
+)
