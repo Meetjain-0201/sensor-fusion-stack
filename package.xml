@@ -2,10 +2,10 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>sensor_fusion_stack</name>
-  <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="meet@todo.todo">meet</maintainer>
-  <license>TODO: License declaration</license>
+  <version>0.0.1</version>
+  <description>Sensor Fusion and Perception Stack</description>
+  <maintainer email="jain.meet@northeastern.edu">Meet Jain</maintainer>
+  <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
@@ -20,6 +20,8 @@
   <depend>pcl_ros</depend>
   <depend>pcl_conversions</depend>
   <depend>image_transport</depend>
+  <depend>gazebo_msgs</depend>
+  <depend>vision_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

@@ -1,6 +1,6 @@
 import os
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, TimerAction
+from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
@@ -13,7 +13,7 @@ def generate_launch_description():
     
     # Paths
     urdf_file = os.path.join(pkg_share, 'urdf', 'robot.urdf.xacro')
-    world_file = os.path.join(pkg_share, 'worlds', 'test_world.world')
+    world_file = os.path.join(pkg_share, 'worlds', 'detection_test_world.world')
     
     # Process xacro
     robot_description = xacro.process_file(urdf_file).toxml()
@@ -23,10 +23,15 @@ def generate_launch_description():
         PythonLaunchDescriptionSource([
             os.path.join(get_package_share_directory('gazebo_ros'), 'launch', 'gazebo.launch.py')
         ]),
-        launch_arguments={
-            'world': world_file,
-            'verbose': 'true'
-        }.items()
+        launch_arguments={'world': world_file}.items()
+    )
+    
+    # Spawn robot
+    spawn_entity = Node(
+        package='gazebo_ros',
+        executable='spawn_entity.py',
+        arguments=['-entity', 'fusion_bot', '-topic', 'robot_description'],
+        output='screen'
     )
     
     # Robot state publisher
@@ -37,21 +42,8 @@ def generate_launch_description():
         output='screen'
     )
     
-    # Spawn robot with delay
-    spawn_entity = Node(
-        package='gazebo_ros',
-        executable='spawn_entity.py',
-        arguments=['-entity', 'fusion_bot', '-topic', 'robot_description', '-timeout', '60.0'],
-        output='screen'
-    )
-    
-    delayed_spawn = TimerAction(
-        period=5.0,
-        actions=[spawn_entity]
-    )
-    
     return LaunchDescription([
         gazebo,
         robot_state_publisher,
-        delayed_spawn
+        spawn_entity
     ])

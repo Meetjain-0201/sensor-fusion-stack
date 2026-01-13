@@ -36,3 +36,28 @@ install(DIRECTORY
 )
 
 ament_package()
+
+# Find additional dependencies
+find_package(gazebo_msgs REQUIRED)
+find_package(PCL REQUIRED COMPONENTS common io)
+find_package(OpenCV REQUIRED)
+
+include_directories(include ${PCL_INCLUDE_DIRS})
+
+# Dataset recorder executable
+add_executable(dataset_recorder src/dataset_recorder.cpp)
+ament_target_dependencies(dataset_recorder
+  rclcpp
+  sensor_msgs
+  gazebo_msgs
+  cv_bridge
+  pcl_ros
+  pcl_conversions
+  image_transport
+)
+target_link_libraries(dataset_recorder ${PCL_LIBRARIES} ${OpenCV_LIBS})
+
+install(TARGETS
+  dataset_recorder
+  DESTINATION lib/${PROJECT_NAME}
+)
