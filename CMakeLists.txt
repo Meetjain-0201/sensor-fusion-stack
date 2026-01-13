@@ -5,7 +5,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# Find dependencies
+# Find ALL dependencies FIRST
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
@@ -18,6 +18,31 @@ find_package(cv_bridge REQUIRED)
 find_package(pcl_ros REQUIRED)
 find_package(pcl_conversions REQUIRED)
 find_package(image_transport REQUIRED)
+find_package(gazebo_msgs REQUIRED)
+find_package(PCL REQUIRED COMPONENTS common io)
+find_package(OpenCV REQUIRED)
+
+# Include directories
+include_directories(include ${PCL_INCLUDE_DIRS})
+
+# Dataset recorder executable
+add_executable(dataset_recorder src/dataset_recorder.cpp)
+ament_target_dependencies(dataset_recorder
+  rclcpp
+  sensor_msgs
+  gazebo_msgs
+  cv_bridge
+  pcl_ros
+  pcl_conversions
+  image_transport
+)
+target_link_libraries(dataset_recorder ${PCL_LIBRARIES} ${OpenCV_LIBS})
+
+# Install executables
+install(TARGETS
+  dataset_recorder
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 # Install directories
 install(DIRECTORY
@@ -35,29 +60,5 @@ install(DIRECTORY
   USE_SOURCE_PERMISSIONS
 )
 
+# ament_package() MUST BE LAST
 ament_package()
-
-# Find additional dependencies
-find_package(gazebo_msgs REQUIRED)
-find_package(PCL REQUIRED COMPONENTS common io)
-find_package(OpenCV REQUIRED)
-
-include_directories(include ${PCL_INCLUDE_DIRS})
-
-# Dataset recorder executable
-add_executable(dataset_recorder src/dataset_recorder.cpp)
-ament_target_dependencies(dataset_recorder
-  rclcpp
-  sensor_msgs
-  gazebo_msgs
-  cv_bridge
-  pcl_ros
-  pcl_conversions
-  image_transport
-)
-target_link_libraries(dataset_recorder ${PCL_LIBRARIES} ${OpenCV_LIBS})
-
-install(TARGETS
-  dataset_recorder
-  DESTINATION lib/${PROJECT_NAME}
-)

@@ -10,7 +10,7 @@ def generate_launch_description():
         output='screen',
         parameters=[{
             'model_path': 'yolov8n.pt',
-            'confidence_threshold': 0.5,
+            'confidence_threshold': 0.3,  # Lowered to detect more
             'publish_annotated': True
         }]
     )

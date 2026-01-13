@@ -18,20 +18,15 @@ def generate_launch_description():
     # Process xacro
     robot_description = xacro.process_file(urdf_file).toxml()
     
-    # Gazebo launch
+    # Gazebo launch - HEADLESS
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             os.path.join(get_package_share_directory('gazebo_ros'), 'launch', 'gazebo.launch.py')
         ]),
-        launch_arguments={'world': world_file}.items()
-    )
-    
-    # Spawn robot
-    spawn_entity = Node(
-        package='gazebo_ros',
-        executable='spawn_entity.py',
-        arguments=['-entity', 'fusion_bot', '-topic', 'robot_description'],
-        output='screen'
+        launch_arguments={
+            'world': world_file,
+            'gui': 'false'  # No GUI to prevent crash
+        }.items()
     )
     
     # Robot state publisher
@@ -39,6 +34,14 @@ def generate_launch_description():
         package='robot_state_publisher',
         executable='robot_state_publisher',
         parameters=[{'robot_description': robot_description}],
+        output='screen'
+    )
+    
+    # Spawn robot
+    spawn_entity = Node(
+        package='gazebo_ros',
+        executable='spawn_entity.py',
+        arguments=['-entity', 'fusion_bot', '-topic', 'robot_description'],
         output='screen'
     )
     

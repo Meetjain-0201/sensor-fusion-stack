@@ -15,7 +15,7 @@ class CameraDetector(Node):
         
         # Parameters
         self.declare_parameter('model_path', 'yolov8n.pt')
-        self.declare_parameter('confidence_threshold', 0.5)
+        self.declare_parameter('confidence_threshold', 0.3)  # LOWERED from 0.5
         self.declare_parameter('publish_annotated', True)
         
         model_path = self.get_parameter('model_path').value
@@ -25,10 +25,13 @@ class CameraDetector(Node):
         # Load YOLO model
         self.get_logger().info(f'Loading YOLO model: {model_path}')
         self.model = YOLO(model_path)
-        self.get_logger().info('YOLO model loaded successfully')
+        self.get_logger().info(f'YOLO model loaded. Confidence threshold: {self.conf_threshold}')
         
         # CV Bridge
         self.bridge = CvBridge()
+        
+        # Frame counter for debugging
+        self.frame_count = 0
         
         # Subscribers
         self.image_sub = self.create_subscription(
@@ -53,22 +56,28 @@ class CameraDetector(Node):
             )
         
         self.get_logger().info('Camera detector initialized')
+        self.get_logger().info('YOLO can detect these classes: person, car, truck, bus, motorcycle, bicycle, etc.')
     
     def image_callback(self, msg):
         try:
             # Convert ROS Image to OpenCV
             cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
             
-            # Run detection
-            results = self.model(cv_image, conf=self.conf_threshold, verbose=False)
+            self.frame_count += 1
+            
+            # Run detection with verbose output every 30 frames
+            verbose = (self.frame_count % 30 == 0)
+            results = self.model(cv_image, conf=self.conf_threshold, verbose=verbose)
             
             # Create Detection2DArray message
             detection_array = Detection2DArray()
             detection_array.header = msg.header
             
             # Process detections
+            total_detections = 0
             for result in results:
                 boxes = result.boxes
+                total_detections += len(boxes)
                 
                 for box in boxes:
                     # Get box coordinates
@@ -95,12 +104,18 @@ class CameraDetector(Node):
                     
                     detection_array.detections.append(detection)
                     
-                    # Draw on image
+                    # Draw on image with thicker lines
                     if self.publish_annotated:
-                        cv2.rectangle(cv_image, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
+                        cv2.rectangle(cv_image, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 3)
                         label = f'{class_name} {conf:.2f}'
                         cv2.putText(cv_image, label, (int(x1), int(y1) - 10),
-                                  cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                                  cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+            
+            # Add debug info on image
+            if self.publish_annotated:
+                debug_text = f'Frame: {self.frame_count} | Detections: {total_detections} | Conf: {self.conf_threshold}'
+                cv2.putText(cv_image, debug_text, (10, 30),
+                          cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
             
             # Publish detections
             self.detection_pub.publish(detection_array)
@@ -111,9 +126,11 @@ class CameraDetector(Node):
                 annotated_msg.header = msg.header
                 self.annotated_pub.publish(annotated_msg)
             
-            if len(detection_array.detections) > 0:
-                self.get_logger().info(f'Detected {len(detection_array.detections)} objects', 
-                                     throttle_duration_sec=2.0)
+            # Log detection info
+            if total_detections > 0:
+                self.get_logger().info(f'Frame {self.frame_count}: Detected {total_detections} objects')
+            elif self.frame_count % 30 == 0:
+                self.get_logger().warn(f'Frame {self.frame_count}: No detections found')
         
         except Exception as e:
             self.get_logger().error(f'Error in detection: {str(e)}')
