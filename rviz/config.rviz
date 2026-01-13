@@ -99,6 +99,17 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /fusion/objects
       Value: true
+      
+    - Class: rviz_default_plugins/MarkerArray
+      Enabled: true
+      Name: Tracked_Objects
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /tracking/objects
+      Value: true
 
   Enabled: true
   Global Options:

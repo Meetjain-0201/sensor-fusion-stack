@@ -23,9 +23,10 @@ find_package(gazebo_msgs REQUIRED)
 find_package(vision_msgs REQUIRED)
 find_package(PCL REQUIRED COMPONENTS common io)
 find_package(OpenCV REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 # Include directories
-include_directories(include ${PCL_INCLUDE_DIRS})
+include_directories(include ${PCL_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
 
 # Dataset recorder executable
 add_executable(dataset_recorder src/dataset_recorder.cpp)
@@ -69,11 +70,21 @@ ament_target_dependencies(sensor_fusion
 )
 target_link_libraries(sensor_fusion ${PCL_LIBRARIES} ${OpenCV_LIBS})
 
+# Kalman tracker executable
+add_executable(kalman_tracker src/kalman_tracker.cpp)
+ament_target_dependencies(kalman_tracker
+  rclcpp
+  visualization_msgs
+  geometry_msgs
+)
+target_link_libraries(kalman_tracker Eigen3::Eigen)
+
 # Install executables
 install(TARGETS
   dataset_recorder
   lidar_clustering
   sensor_fusion
+  kalman_tracker
   DESTINATION lib/${PROJECT_NAME}
 )
 
