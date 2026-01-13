@@ -1,0 +1,22 @@
+# Build and install directories
+build/
+install/
+log/
+*.pyc
+__pycache__/
+
+# IDE
+.vscode/
+.idea/
+
+# ROS bags
+*.bag
+*.db3
+
+# Datasets
+dataset/
+*.pcd
+
+# OS
+.DS_Store
+Thumbs.db
